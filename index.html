@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>다국어 하루일과 카드 인쇄 도구</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&family=Noto+Sans+KR:wght@700&family=Noto+Sans+SC:wght@700&family=Noto+Sans+Thai:wght@700&family=Noto+Sans:wght@700&display=swap" rel="stylesheet">
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #eef1f5;
+    font-family: 'Noto Sans KR', 'Noto Sans', 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans Thai', sans-serif;
+    color: #222;
+  }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #ffffff;
+    border-bottom: 1px solid #d0d7de;
+    padding: 14px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .toolbar-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .toolbar-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2328;
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  button {
+    cursor: pointer;
+    border: 1px solid #d0d7de;
+    background: #f6f8fa;
+    color: #24292f;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  button:hover {
+    background: #eaeef2;
+  }
+
+  button.active {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+  }
+
+  button.btn-all {
+    background: #0f766e;
+    color: #ffffff;
+    border-color: #0f766e;
+  }
+
+  button.btn-all.active {
+    background: #115e59;
+    box-shadow: 0 0 0 2px #99f6e4;
+  }
+
+  button.btn-print {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  button.btn-print:hover {
+    background: #b91c1c;
+  }
+
+  .guide-box {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.5;
+  }
+
+  .mobile-notice {
+    display: none;
+    margin-top: 6px;
+    color: #b45309;
+    font-weight: 700;
+  }
+
+  @media (max-width: 820px) {
+    .mobile-notice {
+      display: block;
+    }
+  }
+
+  .pages-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 12px 60px;
+    gap: 20px;
+  }
+
+  .page-wrapper {
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    background: #ffffff;
+  }
+
+  .a4-page {
+    position: relative;
+    width: 210mm;
+    height: 297mm;
+    background: #ffffff;
+    overflow: hidden;
+    transform-origin: top left;
+  }
+
+  .bg-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    z-index: 1;
+  }
+
+  .text-slot {
+    position: absolute;
+    left: 37.5%;
+    width: 57.5%;
+    height: 18.4%;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 10px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.22;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .text-slot.single-line {
+    font-size: 54px;
+  }
+  .text-slot.single-line.slot-0 { top: 4.5%; }
+  .text-slot.single-line.slot-1 { top: 28.3%; }
+  .text-slot.single-line.slot-2 { top: 52.2%; }
+  .text-slot.single-line.slot-3 { top: 76.1%; }
+
+  .text-slot.two-lines {
+    font-size: 36px;
+  }
+  .text-slot.two-lines.slot-0 { top: 4.8%; }
+  .text-slot.two-lines.slot-1 { top: 28.6%; }
+  .text-slot.two-lines.slot-2 { top: 52.5%; }
+  .text-slot.two-lines.slot-3 { top: 76.4%; }
+
+  .page-badge {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    z-index: 5;
+    background: rgba(15, 23, 42, 0.78);
+    color: #fff;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  @media print {
+    body {
+      background: #ffffff;
+    }
+    .toolbar, .page-badge {
+      display: none !important;
+    }
+    .pages-container {
+      padding: 0;
+      gap: 0;
+      display: block;
+    }
+    .page-wrapper {
+      width: 210mm !important;
+      height: 297mm !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      page-break-after: always;
+      break-after: page;
+    }
+    .page-wrapper:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+    .a4-page {
+      transform: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="toolbar-top">
+    <div class="toolbar-title">다국어 하루일과 카드 인쇄 도구 (A4 규격)</div>
+    <div class="toolbar-actions">
+      <button class="btn-print" onclick="window.print()">🖨️ PDF로 저장 / 인쇄 (Ctrl+P)</button>
+    </div>
+  </div>
+  <div class="btn-group" id="langButtons"></div>
+  <div class="guide-box">
+    ※ 인쇄 창에서 <b>[대상: PDF로 저장]</b>, <b>[여백: 없음]</b>, <b>[배율: 기본값(100%)]</b>, <b>[배경 그래픽: 체크]</b> 후 출력하시면 A4 규격에 맞춰 바로 오려 쓰실 수 있습니다.
+    <div class="mobile-notice">📱 모바일 화면에서는 미리보기로 축소 표시됩니다. 실제 A4 인쇄 및 PDF 저장은 PC 브라우저에서 이용해 주세요.</div>
+  </div>
+</div>
+
+<div class="pages-container" id="pagesContainer"></div>
+
+<script>
+  // 배열(1줄 또는 2줄)로 직접 구성하여 줄바꿈 기호 오류 원천 차단
+  const DATA = {
+    "한국어": [
+      ["등원"],
+      ["대·소집단 활동"],
+      ["화장실 가기 및", "손 씻기"],
+      ["간식 시간"],
+      ["자유 놀이"],
+      ["정리 정돈"],
+      ["점심 식사"],
+      ["바깥 놀이"],
+      ["하원"]
+    ],
+    "중국어": [
+      ["上学"],
+      ["大小集体活动"],
+      ["去卫生间及洗手"],
+      ["吃零食"],
+      ["自由游戏"],
+      ["整理整顿"],
+      ["午餐"],
+      ["室外游戏活动"],
+      ["回家"]
+    ],
+    "일본어": [
+      ["登園"],
+      ["大小グループ活動"],
+      ["トイレ・手洗い"],
+      ["間食"],
+      ["自由遊び"],
+      ["片付け"],
+      ["給食"],
+      ["戸外遊び"],
+      ["降園"]
+    ],
+    "베트남어": [
+      ["Đến trường"],
+      ["Hoạt động theo nhóm lớn", "và nhóm nhỏ"],
+      ["Đi vệ sinh", "và rửa tay"],
+      ["Ăn nhẹ"],
+      ["Chơi tự do"],
+      ["Sắp xếp, dọn dẹp"],
+      ["Ăn trưa"],
+      ["Hoạt động vui chơi", "ngoài trời"],
+      ["Về nhà"]
+    ],
+    "태국어": [
+      ["มาโรงเรียน"],
+      ["กิจกรรมกลุ่มใหญ่", "และกลุ่มย่อย"],
+      ["เข้าห้องน้ำ", "และล้างมือ"],
+      ["รับประทานอาหารว่าง"],
+      ["เล่นอิสระ"],
+      ["เก็บของเข้าที่"],
+      ["รับประทานอาหารกลางวัน"],
+      ["กิจกรรมกลางแจ้ง"],
+      ["กลับบ้าน"]
+    ],
+    "몽골어": [
+      ["цэцэрлэгт ирэх"],
+      ["Том, жижиг бүлгээр", "ажиллах"],
+      ["бие засах,", "гар угаах"],
+      ["хөнгөн цай уух"],
+      ["чөлөөтэй тоглох"],
+      ["Тоглоомоо цэгцлэх"],
+      ["өдрийн хоол"],
+      ["гадаа тоглох"],
+      ["гэртээ харих"]
+    ],
+    "영어": [
+      ["Commuting"],
+      ["Group activity"],
+      ["Bathroom break,", "handwashing"],
+      ["Refreshment"],
+      ["Free activity"],
+      ["Clean-up"],
+      ["Lunch"],
+      ["Outdoor activity"],
+      ["Dismiss"]
+    ],
+    "스페인어": [
+      ["Llegada al colegio"],
+      ["Actividades en grupos", "grandes y pequeños"],
+      ["Ir al baño y", "lavado de manos"],
+      ["Merienda"],
+      ["Juego libre"],
+      ["Ordenar"],
+      ["Almuerzo"],
+      ["Actividades", "al aire libre"],
+      ["Salida"]
+    ],
+    "러시아어": [
+      ["Приход детей", "в детский сад"],
+      ["Деятельность в больших", "и малых группах"],
+      ["Туалет и мытье рук"],
+      ["Перекус"],
+      ["Свободная игра"],
+      ["Наведение порядка"],
+      ["Обед"],
+      ["Деятельность", "на свежем воздухе"],
+      ["Уход домой"]
+    ],
+    "빈칸 양식": [[], [], [], [], [], [], [], [], []]
+  };
+
+  function createSlideImg(slideNum) {
+    const img = document.createElement("img");
+    img.className = "bg-slide";
+    const candidates = [
+      "슬라이드" + slideNum + ".jpg",
+      "슬라이드" + slideNum + ".JPG",
+      "슬라이드" + slideNum + ".png",
+      "슬라이드" + slideNum + ".PNG",
+      "슬라이드" + slideNum + ".jpeg"
+    ];
+    let idx = 0;
+    img.src = candidates[idx];
+    img.onerror = function() {
+      idx++;
+      if (idx < candidates.length) {
+        img.src = candidates[idx];
+      }
+    };
+    return img;
+  }
+
+  function renderLanguagePages(langName, items) {
+    const fragment = document.createDocumentFragment();
+    const pageConfigs = [
+      { slideNum: 1, startIdx: 0, count: 4 },
+      { slideNum: 2, startIdx: 4, count: 4 },
+      { slideNum: 3, startIdx: 8, count: 1 }
+    ];
+
+    pageConfigs.forEach(function(cfg, pIdx) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "page-wrapper";
+
+      const page = document.createElement("div");
+      page.className = "a4-page";
+
+      const badge = document.createElement("div");
+      badge.className = "page-badge";
+      badge.textContent = langName + " (" + (pIdx + 1) + "/3)";
+      page.appendChild(badge);
+
+      page.appendChild(createSlideImg(cfg.slideNum));
+
+      for (let i = 0; i < cfg.count; i++) {
+        const lines = items[cfg.startIdx + i] || [];
+        const isTwoLines = lines.length > 1;
+        const slot = document.createElement("div");
+        slot.className = "text-slot slot-" + i + (isTwoLines ? " two-lines" : " single-line");
+
+        lines.forEach(function(lineText) {
+          const lineDiv = document.createElement("div");
+          lineDiv.textContent = lineText;
+          slot.appendChild(lineDiv);
+        });
+
+        page.appendChild(slot);
+      }
+
+      wrapper.appendChild(page);
+      fragment.appendChild(wrapper);
+    });
+
+    return fragment;
+  }
+
+  function updateScale() {
+    const wrappers = document.querySelectorAll(".page-wrapper");
+    if (!wrappers.length) return;
+
+    const availableWidth = Math.min(window.innerWidth - 24, 794);
+    const baseWidth = 793.7;
+    const baseHeight = 1122.5;
+    const scale = availableWidth < baseWidth ? availableWidth / baseWidth : 1;
+
+    wrappers.forEach(function(wrapper) {
+      const page = wrapper.querySelector(".a4-page");
+      wrapper.style.width = (baseWidth * scale) + "px";
+      wrapper.style.height = (baseHeight * scale) + "px";
+      page.style.transform = "scale(" + scale + ")";
+    });
+  }
+
+  let currentMode = "ALL";
+
+  function render() {
+    const container = document.getElementById("pagesContainer");
+    container.innerHTML = "";
+
+    if (currentMode === "ALL") {
+      Object.entries(DATA).forEach(function(entry) {
+        container.appendChild(renderLanguagePages(entry[0], entry[1]));
+      });
+    } else {
+      container.appendChild(renderLanguagePages(currentMode, DATA[currentMode]));
+    }
+
+    document.querySelectorAll("#langButtons button").forEach(function(btn) {
+      btn.classList.toggle("active", btn.dataset.mode === currentMode);
+    });
+
+    updateScale();
+  }
+
+  function initButtons() {
+    const btnGroup = document.getElementById("langButtons");
+
+    const allBtn = document.createElement("button");
+    allBtn.textContent = "📚 전체 10종 한 번에 보기 (통합 PDF용)";
+    allBtn.className = "btn-all";
+    allBtn.dataset.mode = "ALL";
+    allBtn.onclick = function() { currentMode = "ALL"; render(); };
+    btnGroup.appendChild(allBtn);
+
+    Object.keys(DATA).forEach(function(lang) {
+      const btn = document.createElement("button");
+      btn.textContent = lang;
+      btn.dataset.mode = lang;
+      btn.onclick = function() { currentMode = lang; render(); };
+      btnGroup.appendChild(btn);
+    });
+  }
+
+  window.addEventListener("resize", updateScale);
+  initButtons();
+  render();
+</script>
+</body>
+</html>
