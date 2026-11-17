@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+html_content = r"""<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>다국어 하루일과 카드 인쇄 도구</title>
+<title>다국어 하루일과 카드 인쇄 도구 (한국어 발음 포함)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&family=Noto+Sans+KR:wght@700&family=Noto+Sans+SC:wght@700&family=Noto+Sans+Thai:wght@700&family=Noto+Sans:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&family=Noto+Sans+KR:wght@500;700&family=Noto+Sans+SC:wght@700&family=Noto+Sans+Thai:wght@700&family=Noto+Sans:wght@700&display=swap" rel="stylesheet">
 <style>
   * {
     box-sizing: border-box;
@@ -173,28 +173,52 @@
     justify-content: center;
     text-align: center;
     padding: 0 10px;
-    font-weight: 700;
     color: #1e293b;
-    line-height: 1.22;
     word-break: keep-all;
     overflow-wrap: break-word;
   }
 
-  .text-slot.single-line {
+  .slot-0 { top: 4.8%; }
+  .slot-1 { top: 28.6%; }
+  .slot-2 { top: 52.5%; }
+  .slot-3 { top: 76.4%; }
+
+  /* 원어 영역 */
+  .native-wrap {
+    font-weight: 700;
+    line-height: 1.18;
+    color: #0f172a;
+  }
+
+  .text-slot.single-line .native-wrap {
+    font-size: 46px;
+  }
+
+  .text-slot.two-lines .native-wrap {
+    font-size: 30px;
+  }
+
+  /* 한국어만 있을 때 (발음 표기 없음) */
+  .text-slot.no-pron.single-line .native-wrap {
     font-size: 54px;
   }
-  .text-slot.single-line.slot-0 { top: 4.5%; }
-  .text-slot.single-line.slot-1 { top: 28.3%; }
-  .text-slot.single-line.slot-2 { top: 52.2%; }
-  .text-slot.single-line.slot-3 { top: 76.1%; }
-
-  .text-slot.two-lines {
-    font-size: 36px;
+  .text-slot.no-pron.two-lines .native-wrap {
+    font-size: 38px;
   }
-  .text-slot.two-lines.slot-0 { top: 4.8%; }
-  .text-slot.two-lines.slot-1 { top: 28.6%; }
-  .text-slot.two-lines.slot-2 { top: 52.5%; }
-  .text-slot.two-lines.slot-3 { top: 76.4%; }
+
+  /* 한국어 발음 표기 영역 */
+  .pron-text {
+    margin-top: 7px;
+    font-size: 21px;
+    font-weight: 600;
+    color: #475569;
+    line-height: 1.25;
+  }
+
+  .text-slot.two-lines .pron-text {
+    margin-top: 5px;
+    font-size: 18px;
+  }
 
   .page-badge {
     position: absolute;
@@ -247,7 +271,7 @@
 
 <div class="toolbar">
   <div class="toolbar-top">
-    <div class="toolbar-title">다국어 하루일과 카드 인쇄 도구 (A4 규격)</div>
+    <div class="toolbar-title">다국어 하루일과 카드 인쇄 도구 (원어 + 한국어 발음 표기)</div>
     <div class="toolbar-actions">
       <button class="btn-print" onclick="window.print()">🖨️ PDF로 저장 / 인쇄 (Ctrl+P)</button>
     </div>
@@ -262,108 +286,117 @@
 <div class="pages-container" id="pagesContainer"></div>
 
 <script>
-  // 배열(1줄 또는 2줄)로 직접 구성하여 줄바꿈 기호 오류 원천 차단
   const DATA = {
     "한국어": [
-      ["등원"],
-      ["대·소집단 활동"],
-      ["화장실 가기 및", "손 씻기"],
-      ["간식 시간"],
-      ["자유 놀이"],
-      ["정리 정돈"],
-      ["점심 식사"],
-      ["바깥 놀이"],
-      ["하원"]
+      { native: ["등원"], pron: "" },
+      { native: ["대·소집단 활동"], pron: "" },
+      { native: ["화장실 가기 및", "손 씻기"], pron: "" },
+      { native: ["간식 시간"], pron: "" },
+      { native: ["자유 놀이"], pron: "" },
+      { native: ["정리 정돈"], pron: "" },
+      { native: ["점심 식사"], pron: "" },
+      { native: ["바깥 놀이"], pron: "" },
+      { native: ["하원"], pron: "" }
     ],
     "중국어": [
-      ["上学"],
-      ["大小集体活动"],
-      ["去卫生间及洗手"],
-      ["吃零食"],
-      ["自由游戏"],
-      ["整理整顿"],
-      ["午餐"],
-      ["室外游戏活动"],
-      ["回家"]
+      { native: ["上学"], pron: "[샹쉬에]" },
+      { native: ["大小集体活动"], pron: "[따샤오 지티 후어똥]" },
+      { native: ["去卫生间及洗手"], pron: "[취 웨이성젠 지 시셔우]" },
+      { native: ["吃零食"], pron: "[츠 링스]" },
+      { native: ["自由游戏"], pron: "[쯔여우 여우시]" },
+      { native: ["整理整顿"], pron: "[정리 정뚠]" },
+      { native: ["午餐"], pron: "[우찬]" },
+      { native: ["室外游戏活动"], pron: "[스외이 여우시 후어똥]" },
+      { native: ["回家"], pron: "[후이지아]" }
     ],
     "일본어": [
-      ["登園"],
-      ["大小グループ活動"],
-      ["トイレ・手洗い"],
-      ["間食"],
-      ["自由遊び"],
-      ["片付け"],
-      ["給食"],
-      ["戸外遊び"],
-      ["降園"]
+      { native: ["登園"], pron: "[토엔]" },
+      { native: ["大小グループ活動"], pron: "[다이쇼 구루푸 카츠도]" },
+      { native: ["トイレ・手洗い"], pron: "[토이레·테아라이]" },
+      { native: ["間食"], pron: "[칸쇼쿠]" },
+      { native: ["自由遊び"], pron: "[지유 아소비]" },
+      { native: ["片付け"], pron: "[카타즈케]" },
+      { native: ["給食"], pron: "[큐쇼쿠]" },
+      { native: ["戸外遊び"], pron: "[코가이 아소비]" },
+      { native: ["降園"], pron: "[코엔]" }
     ],
     "베트남어": [
-      ["Đến trường"],
-      ["Hoạt động theo nhóm lớn", "và nhóm nhỏ"],
-      ["Đi vệ sinh", "và rửa tay"],
-      ["Ăn nhẹ"],
-      ["Chơi tự do"],
-      ["Sắp xếp, dọn dẹp"],
-      ["Ăn trưa"],
-      ["Hoạt động vui chơi", "ngoài trời"],
-      ["Về nhà"]
+      { native: ["Đến trường"], pron: "[덴 쯔엉]" },
+      { native: ["Hoạt động theo nhóm lớn", "và nhóm nhỏ"], pron: "[홧 동 테오 뇸 런 바 뇸 뇨]" },
+      { native: ["Đi vệ sinh", "và rửa tay"], pron: "[디 베 신 바 즈어 따이]" },
+      { native: ["Ăn nhẹ"], pron: "[안 녜]" },
+      { native: ["Chơi tự do"], pron: "[쩌이 뜨 조]" },
+      { native: ["Sắp xếp, dọn dẹp"], pron: "[쌉 셉, 존 뎁]" },
+      { native: ["Ăn trưa"], pron: "[안 쯔어]" },
+      { native: ["Hoạt động vui chơi", "ngoài trời"], pron: "[홧 동 부이 쩌이 응와이 쩌이]" },
+      { native: ["Về nhà"], pron: "[베 냐]" }
     ],
     "태국어": [
-      ["มาโรงเรียน"],
-      ["กิจกรรมกลุ่มใหญ่", "และกลุ่มย่อย"],
-      ["เข้าห้องน้ำ", "และล้างมือ"],
-      ["รับประทานอาหารว่าง"],
-      ["เล่นอิสระ"],
-      ["เก็บของเข้าที่"],
-      ["รับประทานอาหารกลางวัน"],
-      ["กิจกรรมกลางแจ้ง"],
-      ["กลับบ้าน"]
+      { native: ["มาโรงเรียน"], pron: "[마 롱리안]" },
+      { native: ["กิจกรรมกลุ่มใหญ่", "และกลุ่มย่อย"], pron: "[낏짜깜 끌룸 야이 래 끌룸 여이]" },
+      { native: ["เข้าห้องน้ำ", "และล้างมือ"], pron: "[카오 헝남 래 랑 므]" },
+      { native: ["รับประทานอาหารว่าง"], pron: "[랍쁘라탄 아한 왕]" },
+      { native: ["เล่นอิสระ"], pron: "[렌 잇사라]" },
+      { native: ["เก็บของเข้าที่"], pron: "[겝 컹 카오 티]" },
+      { native: ["รับประทานอาหารกลางวัน"], pron: "[랍쁘라탄 아한 끌랑완]" },
+      { native: ["กิจกรรมกลางแจ้ง"], pron: "[낏짜깜 끌랑쨍]" },
+      { native: ["กลับบ้าน"], pron: "[끌랍 반]" }
     ],
     "몽골어": [
-      ["цэцэрлэгт ирэх"],
-      ["Том, жижиг бүлгээр", "ажиллах"],
-      ["бие засах,", "гар угаах"],
-      ["хөнгөн цай уух"],
-      ["чөлөөтэй тоглох"],
-      ["Тоглоомоо цэгцлэх"],
-      ["өдрийн хоол"],
-      ["гадаа тоглох"],
-      ["гэртээ харих"]
+      { native: ["цэцэрлэгт ирэх"], pron: "[체체를렉트 이레흐]" },
+      { native: ["Том, жижиг бүлгээр", "ажиллах"], pron: "[톰, 지지그 불게르 아질라흐]" },
+      { native: ["бие засах,", "гар угаах"], pron: "[비예 자사흐, 가르 오가흐]" },
+      { native: ["хөнгөн цай уух"], pron: "[홍곤 차이 오흐]" },
+      { native: ["чөлөөтэй тоглох"], pron: "[촐로테 토글로흐]" },
+      { native: ["Тоглоомоо цэгцлэх"], pron: "[토글로모 체그츨레흐]" },
+      { native: ["өдрийн хоол"], pron: "[오드린 홀]" },
+      { native: ["гадаа тоглох"], pron: "[가다 토글로흐]" },
+      { native: ["гэртээ харих"], pron: "[게르테 하리흐]" }
     ],
     "영어": [
-      ["Commuting"],
-      ["Group activity"],
-      ["Bathroom break,", "handwashing"],
-      ["Refreshment"],
-      ["Free activity"],
-      ["Clean-up"],
-      ["Lunch"],
-      ["Outdoor activity"],
-      ["Dismiss"]
+      { native: ["Arrival"], pron: "[어라이벌]" },
+      { native: ["Group activity"], pron: "[그룹 액티비티]" },
+      { native: ["Bathroom break,", "handwashing"], pron: "[배스룸 브레이크, 핸드워싱]" },
+      { native: ["Refreshment"], pron: "[리프레시먼트]" },
+      { native: ["Free activity"], pron: "[프리 액티비티]" },
+      { native: ["Clean-up"], pron: "[클린업]" },
+      { native: ["Lunch"], pron: "[런치]" },
+      { native: ["Outdoor activity"], pron: "[아웃도어 액티비티]" },
+      { native: ["Dismissal"], pron: "[디스미설]" }
     ],
     "스페인어": [
-      ["Llegada al colegio"],
-      ["Actividades en grupos", "grandes y pequeños"],
-      ["Ir al baño y", "lavado de manos"],
-      ["Merienda"],
-      ["Juego libre"],
-      ["Ordenar"],
-      ["Almuerzo"],
-      ["Actividades", "al aire libre"],
-      ["Salida"]
+      { native: ["Llegada al colegio"], pron: "[예가다 알 콜레히오]" },
+      { native: ["Actividades en grupos", "grandes y pequeños"], pron: "[악티비다데스 엔 그루포스 그란데스 이 페케뇨스]" },
+      { native: ["Ir al baño y", "lavado de manos"], pron: "[이르 알 바뇨 이 라바도 데 마노스]" },
+      { native: ["Merienda"], pron: "[메리엔다]" },
+      { native: ["Juego libre"], pron: "[후에고 리브레]" },
+      { native: ["Ordenar"], pron: "[오르데나르]" },
+      { native: ["Almuerzo"], pron: "[알무에르소]" },
+      { native: ["Actividades", "al aire libre"], pron: "[악티비다데스 알 아이레 리브레]" },
+      { native: ["Salida"], pron: "[살리다]" }
     ],
     "러시아어": [
-      ["Приход детей", "в детский сад"],
-      ["Деятельность в больших", "и малых группах"],
-      ["Туалет и мытье рук"],
-      ["Перекус"],
-      ["Свободная игра"],
-      ["Наведение порядка"],
-      ["Обед"],
-      ["Деятельность", "на свежем воздухе"],
-      ["Уход домой"]
+      { native: ["Приход детей", "в детский сад"], pron: "[프리홋 제테이 브 제츠키 삿]" },
+      { native: ["Деятельность в больших", "и малых группах"], pron: "[제야텔노스찌 브 볼쉬흐 이 말리흐 그루파흐]" },
+      { native: ["Туалет и мытье рук"], pron: "[투알렛 이 미티요 룩]" },
+      { native: ["Перекус"], pron: "[페레쿠스]" },
+      { native: ["Свободная игра"], pron: "[스바보드나야 이그라]" },
+      { native: ["Наведение порядка"], pron: "[나베제니예 파랴트카]" },
+      { native: ["Обед"], pron: "[아벳]" },
+      { native: ["Деятельность", "на свежем воздухе"], pron: "[제야텔노스찌 나 스베젬 보즈두헤]" },
+      { native: ["Уход домой"], pron: "[우홋 다모이]" }
     ],
-    "빈칸 양식": [[], [], [], [], [], [], [], [], []]
+    "빈칸 양식": [
+      { native: [], pron: "" },
+      { native: [], pron: "" },
+      { native: [], pron: "" },
+      { native: [], pron: "" },
+      { native: [], pron: "" },
+      { native: [], pron: "" },
+      { native: [], pron: "" },
+      { native: [], pron: "" },
+      { native: [], pron: "" }
+    ]
   };
 
   function createSlideImg(slideNum) {
@@ -410,16 +443,33 @@
       page.appendChild(createSlideImg(cfg.slideNum));
 
       for (let i = 0; i < cfg.count; i++) {
-        const lines = items[cfg.startIdx + i] || [];
+        const entry = items[cfg.startIdx + i] || { native: [], pron: "" };
+        const lines = entry.native || [];
+        const hasPron = Boolean(entry.pron && entry.pron.trim());
         const isTwoLines = lines.length > 1;
-        const slot = document.createElement("div");
-        slot.className = "text-slot slot-" + i + (isTwoLines ? " two-lines" : " single-line");
 
-        lines.forEach(function(lineText) {
-          const lineDiv = document.createElement("div");
-          lineDiv.textContent = lineText;
-          slot.appendChild(lineDiv);
-        });
+        const slot = document.createElement("div");
+        slot.className = "text-slot slot-" + i
+          + (isTwoLines ? " two-lines" : " single-line")
+          + (hasPron ? " has-pron" : " no-pron");
+
+        if (lines.length > 0) {
+          const nativeWrap = document.createElement("div");
+          nativeWrap.className = "native-wrap";
+          lines.forEach(function(lineText) {
+            const lineDiv = document.createElement("div");
+            lineDiv.textContent = lineText;
+            nativeWrap.appendChild(lineDiv);
+          });
+          slot.appendChild(nativeWrap);
+        }
+
+        if (hasPron) {
+          const pronDiv = document.createElement("div");
+          pronDiv.className = "pron-text";
+          pronDiv.textContent = entry.pron;
+          slot.appendChild(pronDiv);
+        }
 
         page.appendChild(slot);
       }
@@ -494,3 +544,8 @@
 </script>
 </body>
 </html>
+"""
+
+with open("daily-routine-cards-pron-v3.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+print("Saved daily-routine-cards-pron-v3.html")
